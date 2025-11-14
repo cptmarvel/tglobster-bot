@@ -3,8 +3,7 @@ from PIL import Image, ImageDraw, ImageFont
 from telegram import Update
 from telegram.ext import ApplicationBuilder, MessageHandler, filters, ContextTypes
 
-import os
-TOKEN = os.getenv("TOKEN")
+TOKEN = "8355661003:AAESgZJeY0atPySbu075Qymlsm5DjkSVpNU"
 
 async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
     caption = update.message.caption
@@ -47,4 +46,5 @@ app.add_handler(MessageHandler(filters.PHOTO, handle_photo))
 
 print("Бот работает...")
 app.run_polling()
+
 
