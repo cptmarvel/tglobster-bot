@@ -1,15 +1,12 @@
 import os
 from PIL import Image, ImageDraw, ImageFont
 from telegram import Update
-from telegram.ext import ApplicationBuilder, MessageHandler, filters, ContextTypes
+from telegram.ext import ApplicationBuilder, MessageHandler, CommandHandler, filters, ContextTypes
 
-import os
 TOKEN = os.getenv("TOKEN")
 
-async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    caption = update.message.caption
-
-    if not caption:
+async def process_photo(update: Update, caption_text):
+    if not caption_text:
         await update.message.reply_text("Добавь текст к фото")
         return
 
@@ -23,16 +20,15 @@ async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
     font_size = int(img.width * 0.1)
     font = ImageFont.truetype("Lobster-Regular.ttf", font_size)
 
-
-    bbox = draw.textbbox((0, 0), caption, font=font)
+    bbox = draw.textbbox((0, 0), caption_text, font=font)
     text_width = bbox[2] - bbox[0]
     text_height = bbox[3] - bbox[1]
 
     x = (img.width - text_width) / 2
     y = img.height - text_height - 100
 
-    draw.text((x+3, y+3), caption, font=font, fill="black")
-    draw.text((x, y), caption, font=font, fill="white")
+    draw.text((x+3, y+3), caption_text, font=font, fill="black")
+    draw.text((x, y), caption_text, font=font, fill="white")
 
     output = "output.jpg"
     img.save(output)
@@ -42,11 +38,27 @@ async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
     os.remove(file_path)
     os.remove(output)
 
+async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    caption = update.message.caption
+    if update.message.text and f"@{context.bot.username}" in update.message.text:
+        await process_photo(update, caption)
+    elif caption:
+        await process_photo(update, caption)
+
+async def lob_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if not update.message.reply_to_message or not update.message.reply_to_message.photo:
+        await update.message.reply_text("Ответь на фото командой /lob с текстом подписи")
+        return
+    caption_text = " ".join(context.args)
+    await process_photo(update.message.reply_to_message, caption_text)
+
 app = ApplicationBuilder().token(TOKEN).build()
 app.add_handler(MessageHandler(filters.PHOTO, handle_photo))
+app.add_handler(CommandHandler("lob", lob_command))
 
 print("Бот работает...")
 app.run_polling()
+
 
 
 
