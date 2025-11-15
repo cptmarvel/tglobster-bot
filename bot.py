@@ -4,7 +4,7 @@ from telegram import Update
 from telegram.ext import ApplicationBuilder, MessageHandler, filters, ContextTypes
 
 
-TOKEN = "8355661003:AAESgZJeY0atPySbu075Qymlsm5DjkSVpNU"
+TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 BOT_USERNAME = "@xyun9i_bot"
 
 async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -79,6 +79,7 @@ app.add_handler(MessageHandler(filters.PHOTO, handle_photo))
 
 print("Бот работает...")
 app.run_polling()
+
 
 
 
